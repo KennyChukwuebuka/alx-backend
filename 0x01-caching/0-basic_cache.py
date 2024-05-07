@@ -24,10 +24,6 @@ class BasicCache(BaseCaching):
         """
         if key is not None and item is not None:
             self.cache_data[key] = item
-            if len(self.cache_data) > BaseCaching.MAX_ITEMS:
-                discard = list(self.cache_data.keys())[0]
-                del self.cache_data[discard]
-                print("DISCARD: {}".format(discard))
 
     def get(self, key):
         """ Get an item by key
