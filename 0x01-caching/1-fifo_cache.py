@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """
-    Create a class BasicCache that inherits from
-    BaseCaching and is a caching system
-        Requirement:
-            use self.cache_data dictionary
+    Write a class FIFOCache that inherits
+    from BaseCaching and is a caching system
+        Requirement
+            use seld.cache_data dictionary
 """
 
 from base_caching import BaseCaching
 
 
-class BasicCache(BaseCaching):
-    """ BasicCache defines:
+class FIFOCache(BaseCaching):
+    """ FIFOCache defines:
       - constants of your caching system
       - where your data are stored (in a dictionary)
     """
@@ -23,11 +23,12 @@ class BasicCache(BaseCaching):
         """ Add an item in the cache
         """
         if key is not None and item is not None:
+            if key in self.cache_data:
+                self.cache_data.pop(key)
+            elif len(self.cache_data) >= BaseCaching.MAX_ITEMS:
+                print("DISCARD: {}".format(list(self.cache_data.keys())[0]))
+                self.cache_data.pop(list(self.cache_data.keys())[0])
             self.cache_data[key] = item
-            if len(self.cache_data) > BaseCaching.MAX_ITEMS:
-                discard = list(self.cache_data.keys())[0]
-                del self.cache_data[discard]
-                print("DISCARD: {}".format(discard))
 
     def get(self, key):
         """ Get an item by key
