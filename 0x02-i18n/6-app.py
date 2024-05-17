@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-'''Task 4: Flask App
+'''Task 6: Use user locale
 '''
 
 from typing import Dict, Union
@@ -56,6 +56,11 @@ def get_locale() -> str:
     locale = request.args.get('locale')
     if locale in app.config['LANGUAGES']:
         return locale
+    if g.user and g.user['locale'] in app.config["LANGUAGES"]:
+        return g.user['locale']
+    header_locale = request.headers.get('locale', '')
+    if header_locale in app.config["LANGUAGES"]:
+        return header_locale
     return request.accept_languages.best_match(app.config['LANGUAGES'])
 
 
@@ -66,7 +71,7 @@ def index() -> str:
     Returns:
         html: homepage
     '''
-    return render_template("5-index.html")
+    return render_template("6-index.html")
 
 
 if __name__ == "__main__":
