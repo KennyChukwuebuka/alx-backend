@@ -3,31 +3,25 @@
     Flask Application
 """
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template
 from flask_babel import Babel, _
 
 app = Flask(__name__)
 babel = Babel(app)
 
-# Define supported locales
-SUPPORTED_LOCALES = ["en", "fr"]
-
-
-@babel.localeselector
-def get_locale():
-    # Check if 'locale' parameter is present in the request
-    locale = request.args.get('locale')
-    if locale in SUPPORTED_LOCALES:
-        return locale
-    else:
-        return request.accept_languages.best_match(SUPPORTED_LOCALES)
-
+# Dummy translations for demonstration purposes
+def gettext(string):
+    return {
+        'Hello': 'Bonjour',
+        'Welcome': 'Bienvenue',
+        # Add more translations as needed
+    }.get(string, string)
 
 @app.route('/')
 def index():
-    return render_template('',
-                           title=_('home_title'), header=_('home_header'))
-
+    greeting = _('Hello')
+    welcome_message = _('Welcome to our website!')
+    return render_template('4-index.html', greeting=greeting, welcome_message=welcome_message)
 
 if __name__ == '__main__':
     app.run()
