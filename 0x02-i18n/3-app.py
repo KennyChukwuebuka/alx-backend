@@ -5,7 +5,6 @@
 
 from flask import Flask
 from flask_babel import Babel
-from flask_babel import lazy_gettext as _
 from flask import render_template
 from flask import request
 
@@ -22,15 +21,23 @@ class Config:
 app = Flask(__name__)
 babel = Babel(app)
 
+app.config.from_object(Config)
+
 
 # Dummy translations for demonstration purposes
 @babel.localeselector
 def get_locale():
+    """
+        get_locale function
+    """
     return request.accept_languages.best_match(app.config['LANGUAGES'])
 
 
 @app.route('/')
 def index():
+    """
+        Index
+    """
     return render_template('3-index.html')
 
 
