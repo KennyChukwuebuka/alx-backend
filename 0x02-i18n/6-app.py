@@ -2,86 +2,77 @@
 '''Task 6: Use user locale
 '''
 
-from flask import Flask, request, g
-from flask_login import current_user, login_user, UserMixin, LoginManager
+from typing import Dict, Union
+from flask import Flask, render_template, request, g
+from flask_babel import Babel
+
+
+class Config:
+    '''Config class'''
+
+    DEBUG = True
+    LANGUAGES = ["en", "fr"]
+    BABEL_DEFAULT_LOCALE = "en"
+    BABEL_DEFAULT_TIMEZONE = "UTC"
+
 
 app = Flask(__name__)
+app.config.from_object(Config)
+app.url_map.strict_slashes = False
+babel = Babel(app)
 
-# Example configuration of supported languages
-app.config['LANGUAGES'] = ['en', 'es', 'fr']
-app.config['DEFAULT_LOCALE'] = 'en'
-
-# Flask-Login setup
-login_manager = LoginManager()
-login_manager.init_app(app)
-
-
-# Dummy user class
-class User(UserMixin):
-    def __init__(self, id, locale):
-        self.id = id
-        self.locale = locale
+users = {
+    1: {"name": "Balou", "locale": "fr", "timezone": "Europe/Paris"},
+    2: {"name": "Beyonce", "locale": "en", "timezone": "US/Central"},
+    3: {"name": "Spock", "locale": "kg", "timezone": "Vulcan"},
+    4: {"name": "Teletubby", "locale": None, "timezone": "Europe/London"},
+}
 
 
-# Dummy user loader
-@login_manager.user_loader
-def load_user(user_id):
-    # This should return the user object from your database
-    # For demonstration purposes, we return a dummy user
-    return User(user_id, 'es')  # Assuming 'es' as preferred locale
-
-
-def get_user_locale():
+def get_user() -> Union[Dict, None]:
+    """Retrieves a user based on a user id.
     """
-    get_user_locale function
-    """
-    if current_user.is_authenticated:
-        return current_user.locale
+    login_id = request.args.get('login_as')
+    if login_id:
+        return users.get(int(login_id))
     return None
 
 
-def get_locale():
+@app.before_request
+def before_request() -> None:
+    """Performs some routines before each request's resolution.
     """
-    get_locale function
+
+    g.user = get_user()
+
+
+@babel.localeselector
+def get_locale() -> str:
+    """Retrieves the locale for a web page.
+
+    Returns:
+        str: best match
     """
-    # 1. Check if the 'locale' argument is present in the request arguments
     locale = request.args.get('locale')
     if locale in app.config['LANGUAGES']:
         return locale
-
-    # 2. Check user settings for locale
-    user_locale = get_user_locale()
-    if user_locale in app.config['LANGUAGES']:
-        return user_locale
-
-    # 3. Fallback to the request headers
-    best_match = request.accept_languages.best_match(app.config['LANGUAGES'])
-    if best_match:
-        return best_match
-
-    # 4. Use the default locale
-    return app.config['DEFAULT_LOCALE']
+    if g.user and g.user['locale'] in app.config["LANGUAGES"]:
+        return g.user['locale']
+    header_locale = request.headers.get('locale', '')
+    if header_locale in app.config["LANGUAGES"]:
+        return header_locale
+    return request.accept_languages.best_match(app.config['LANGUAGES'])
 
 
 @app.route('/')
-def index():
-    """
-        Index
-    """
-    return f"Locale: {get_locale()}"
+def index() -> str:
+    '''default route
+
+    Returns:
+        html: homepage
+    '''
+    return render_template("6-index.html")
 
 
-# Dummy route to simulate login
-@app.route('/login/<user_id>')
-def login(user_id):
-    """
-        Login
-    """
-    user = load_user(user_id)
-    login_user(user)
-    return 'Logged in as: ' + str(user.id)
-
-
-if __name__ == '__main__':
-    app.secret_key = 'supersecretkey'
-    app.run(debug=True)
+if __name__ == "__main__":
+    app.run()

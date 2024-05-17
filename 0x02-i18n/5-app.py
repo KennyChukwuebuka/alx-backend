@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
-'''Task 4: Flask App
-'''
+"""
+    Flask App
+"""
 
-from typing import Dict, Union
 from flask import Flask, render_template, request, g
 from flask_babel import Babel
 
 
 class Config:
-    '''Config class'''
+    """Config class"""
 
-    DEBUG = True
     LANGUAGES = ["en", "fr"]
     BABEL_DEFAULT_LOCALE = "en"
     BABEL_DEFAULT_TIMEZONE = "UTC"
@@ -18,7 +17,6 @@ class Config:
 
 app = Flask(__name__)
 app.config.from_object(Config)
-app.url_map.strict_slashes = False
 babel = Babel(app)
 
 users = {
@@ -29,43 +27,37 @@ users = {
 }
 
 
-def get_user() -> Union[Dict, None]:
-    """Retrieves a user based on a user id.
-    """
-    login_id = request.args.get('login_as')
-    if login_id:
-        return users.get(int(login_id))
+def get_user() -> dict:
+    """Retrieves a user based on a user id."""
+    user_id = request.args.get('login_as')
+    if user_id is not None and int(user_id) in users:
+        return users[int(user_id)]
     return None
 
 
 @app.before_request
 def before_request() -> None:
-    """Performs some routines before each request's resolution.
-    """
-
+    """Performs some routines before each request's resolution."""
     g.user = get_user()
 
 
 @babel.localeselector
-def get_locale() -> str:
-    """Retrieves the locale for a web page.
-
-    Returns:
-        str: best match
-    """
+def get_locale():
+    """Determines the best match for supported languages."""
+    # Check if the 'locale' argument is present in the request arguments
     locale = request.args.get('locale')
+
+    # Verify if the locale is supported
     if locale in app.config['LANGUAGES']:
         return locale
+
+    # Fallback to the default behavior
     return request.accept_languages.best_match(app.config['LANGUAGES'])
 
 
 @app.route('/')
 def index() -> str:
-    '''default route
-
-    Returns:
-        html: homepage
-    '''
+    """Default route."""
     return render_template("5-index.html")
 
 
