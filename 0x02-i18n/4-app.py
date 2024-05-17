@@ -1,27 +1,53 @@
 #!/usr/bin/env python3
 """
-    Flask Application
+    Flask App
 """
 
-from flask import Flask, render_template
-from flask_babel import Babel, _
+from flask import Flask
+from flask_babel import Babel
+from flask import render_template
+from flask import request
+
+
+class Config:
+    """
+        Config class
+    """
+    LANGUAGES = ["en", "fr"]
+    BABEL_DEFAULT_LOCALE = "en"
+    BABEL_DEFAULT_TIMEZONE = "UTC"
+
 
 app = Flask(__name__)
 babel = Babel(app)
 
+app.config.from_object(Config)
+
+
 # Dummy translations for demonstration purposes
-def gettext(string):
-    return {
-        'Hello': 'Bonjour',
-        'Welcome': 'Bienvenue',
-        # Add more translations as needed
-    }.get(string, string)
+@babel.localeselector
+def get_locale():
+    """
+    get_locale function
+    """
+    # Check if the 'locale' argument is present in the request arguments
+    locale = request.args.get('locale')
+
+    # Verify if the locale is supported
+    if locale in app.config['LANGUAGES']:
+        return locale
+
+    # Fallback to the default behavior
+    return request.accept_languages.best_match(app.config['LANGUAGES'])
+
 
 @app.route('/')
 def index():
-    greeting = _('Hello')
-    welcome_message = _('Welcome to our website!')
-    return render_template('4-index.html', greeting=greeting, welcome_message=welcome_message)
+    """
+        Index
+    """
+    return render_template('3-index.html')
+
 
 if __name__ == '__main__':
     app.run()
