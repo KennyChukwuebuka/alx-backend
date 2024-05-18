@@ -75,7 +75,7 @@ def get_timezone() -> str:
 def index() -> str:
     """Default route."""
     current_time = format_datetime(datetime.now())
-    return render_template("7-index.html", current_time=current_time)
+    return render_template("index.html", current_time=current_time)
 
 
 if __name__ == "__main__":
